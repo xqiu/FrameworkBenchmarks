@@ -30,10 +30,13 @@ function azure_check_configuration {
     if [ -z "$AZURE_DEPLOYMENT_NAME" ]; then fail "AZURE_DEPLOYMENT_NAME is not defined."; fi
     if [ ${#AZURE_DEPLOYMENT_NAME} -gt 12 ]; then fail "AZURE_DEPLOYMENT_NAME must be at most 12 characters long."; fi
 
+    # Validate $AZURE_WINDOWS_USERNAME.
+    if [ -z "$AZURE_WINDOWS_USERNAME" ]; then fail "AZURE_WINDOWS_USERNAME is not defined."; fi
+
     # Validate $AZURE_WINDOWS_PASSWORD.
     if [ -z "$AZURE_WINDOWS_PASSWORD" ]; then fail "AZURE_WINDOWS_PASSWORD is not defined."; fi
     if [ ${#AZURE_WINDOWS_PASSWORD} -lt 10 ]; then fail "AZURE_WINDOWS_PASSWORD must be at least 10 characters long."; fi
-
+	
     # Validate AZURE_DEPLOYMENT_VM_SIZE.
     if [ -z "$AZURE_DEPLOYMENT_VM_SIZE" ]; then fail "AZURE_DEPLOYMENT_VM_SIZE is not defined."; fi
     
@@ -100,7 +103,7 @@ function azure_create_common_resources {
     # Create affinity group.
     echo ""
     echo "Creating affinity group $AZURE_DEPLOYMENT_NAME at $AZURE_DEPLOYMENT_LOCATION"
-    $AZURE_COMMAND account affinity-group create $AZURE_DEPLOYMENT_NAME --location "$AZURE_DEPLOYMENT_LOCATION" || fail "Error creating affinity group $AZURE_DEPLOYMENT_NAME."
+    $AZURE_COMMAND account affinity-group create $AZURE_DEPLOYMENT_NAME --location "$AZURE_DEPLOYMENT_LOCATION" --label $AZURE_DEPLOYMENT_NAME || fail "Error creating affinity group $AZURE_DEPLOYMENT_NAME."
 
     # Create storage account.
     echo ""
@@ -144,7 +147,7 @@ function azure_create_vms {
     # Get latest Ubuntu Server 12.04 daily VM image.
     echo ""
     echo "Latest Ubuntu Server 12.04 image:"
-    LATEST_UBUNTU_IMAGE=$($AZURE_COMMAND vm image list | grep Ubuntu_DAILY_BUILD-precise-12_04_2-LTS-amd64-server | sort | tail -1 | cut -c 10-120)
+    LATEST_UBUNTU_IMAGE=$($AZURE_COMMAND vm image list | grep Ubuntu-12_04_4-LTS-amd64-server | sort | tail -1 | cut -c 10-120)
     echo $LATEST_UBUNTU_IMAGE
 
     # Create client VM.
@@ -166,16 +169,16 @@ function azure_create_vms {
     # Create Windows server VM.
     echo ""
     echo "Creating Windows server VM: $WINDOWS_SERVER_VM_NAME"
-    $AZURE_COMMAND vm create $WINDOWS_SERVER_VM_NAME $LATEST_WINDOWS_IMAGE Administrator $AZURE_WINDOWS_PASSWORD --vm-name $WINDOWS_SERVER_VM_NAME --vm-size $AZURE_DEPLOYMENT_VM_SIZE --virtual-network-name $AZURE_DEPLOYMENT_NAME --rdp --affinity-group $AZURE_DEPLOYMENT_NAME || fail "Error creating virtual machine $WINDOWS_SERVER_VM_NAME."
+    $AZURE_COMMAND vm create $WINDOWS_SERVER_VM_NAME $LATEST_WINDOWS_IMAGE $AZURE_WINDOWS_USERNAME $AZURE_WINDOWS_PASSWORD --vm-name $WINDOWS_SERVER_VM_NAME --vm-size $AZURE_DEPLOYMENT_VM_SIZE --virtual-network-name $AZURE_DEPLOYMENT_NAME --rdp --affinity-group $AZURE_DEPLOYMENT_NAME || fail "Error creating virtual machine $WINDOWS_SERVER_VM_NAME."
 
     # Create SQL Server VM.
     echo ""
     echo "SQL Server image:"
-    SQL_SERVER_IMAGE="fb83b3509582419d99629ce476bcb5c8__Microsoft-SQL-Server-2012SP1-CU4-11.0.3368.0-Standard-ENU-Win2012"
+    SQL_SERVER_IMAGE=$($AZURE_COMMAND vm image list | grep SQL-Server-2012SP1 | sort | tail -1 | cut -c 10-120)
     echo $SQL_SERVER_IMAGE
     echo ""
     echo "Creating SQL Server VM: $SQL_SERVER_VM_NAME"
-    $AZURE_COMMAND vm create $SQL_SERVER_VM_NAME $SQL_SERVER_IMAGE Administrator $AZURE_WINDOWS_PASSWORD --vm-name $SQL_SERVER_VM_NAME --vm-size $AZURE_DEPLOYMENT_VM_SIZE --virtual-network-name $AZURE_DEPLOYMENT_NAME --rdp --affinity-group $AZURE_DEPLOYMENT_NAME || fail "Error creating virtual machine $SQL_SERVER_VM_NAME."
+    $AZURE_COMMAND vm create $SQL_SERVER_VM_NAME $SQL_SERVER_IMAGE $AZURE_WINDOWS_USERNAME $AZURE_WINDOWS_PASSWORD --vm-name $SQL_SERVER_VM_NAME --vm-size $AZURE_DEPLOYMENT_VM_SIZE --virtual-network-name $AZURE_DEPLOYMENT_NAME --rdp --affinity-group $AZURE_DEPLOYMENT_NAME || fail "Error creating virtual machine $SQL_SERVER_VM_NAME."
 
     echo ""
 }
@@ -224,9 +227,9 @@ BENCHMARK_LINUX_SERVER_IP="$LINUX_SERVER_IP"
 BENCHMARK_LINUX_USER="$AZURE_LINUX_USER"
 BENCHMARK_SSH_KEY="$AZURE_KEY_FILE"
 BENCHMARK_WINDOWS_SERVER="$WINDOWS_SERVER_VM_NAME.cloudapp.net"
-BENCHMARK_WINDOWS_SERVER_USER="$WINDOWS_SERVER_VM_NAME\Administrator"
+BENCHMARK_WINDOWS_SERVER_USER="$WINDOWS_SERVER_VM_NAME\\$AZURE_WINDOWS_USERNAME"
 BENCHMARK_SQL_SERVER="$SQL_SERVER_VM_NAME.cloudapp.net"
-BENCHMARK_SQL_SERVER_USER="$SQL_SERVER_VM_NAME\Administrator"
+BENCHMARK_SQL_SERVER_USER="$SQL_SERVER_VM_NAME\\$AZURE_WINDOWS_USERNAME"
 BENCHMARK_WORKING_DIR="$BENCHMARK_WORKING_DIR"
 BENCHMARK_REPOSITORY="$BENCHMARK_REPOSITORY"
 BENCHMARK_BRANCH="$BENCHMARK_BRANCH"
@@ -260,11 +263,11 @@ ssh $AZURE_LINUX_USER@$LINUX_SERVER_VM_NAME.cloudapp.net -i $AZURE_KEY_FILE
 
 To connect to the Windows server VM:
 mstsc /v:$WINDOWS_SERVER_VM_NAME.cloudapp.net /admin /f
-User name: $WINDOWS_SERVER_VM_NAME\Administrator
+User name: $WINDOWS_SERVER_VM_NAME\$AZURE_WINDOWS_USERNAME
 
 To connect to the SQL Server VM:
 mstsc /v:$SQL_SERVER_VM_NAME.cloudapp.net /admin /f
-User name: $SQL_SERVER_VM_NAME\Administrator
+User name: $SQL_SERVER_VM_NAME\$AZURE_WINDOWS_USERNAME
 
 To manage the Windows Azure resources:
 https://manage.windowsazure.com

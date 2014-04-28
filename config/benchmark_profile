@@ -15,15 +15,11 @@ export PYTHON_HOME=~/FrameworkBenchmarks/installs/python-2.7.5
 export RACKET_HOME=~/FrameworkBenchmarks/installs/racket-5.3.6
 export NIMROD_HOME=~/FrameworkBenchmarks/installs/nimrod
 export NGINX_HOME=/usr/local/nginx
-
-export PATH="$PYTHON_HOME/bin:$PATH$JAVA_HOME/bin:$GRAILS_HOME/bin:$PLAY_HOME:$PLAY1_HOME:$VERTX_HOME/bin:$GOROOT/bin:$NODE_HOME/bin:$HOME/FrameworkBenchmarks/installs/bin:$MAVEN_HOME/bin:$PERL_HOME/bin:$PERL_HOME/site/bin:$DART_HOME/bin:$RACKET_HOME/bin:$NIMROD_HOME/bin:$NGINX_HOME/sbin:$PATH"
-
+export PATH="$PYTHON_HOME/bin:$JAVA_HOME/bin:$GRAILS_HOME/bin:$PLAY_HOME:$PLAY1_HOME:$VERTX_HOME/bin:$GOROOT/bin:$NODE_HOME/bin:$HOME/FrameworkBenchmarks/installs/bin:$MAVEN_HOME/bin:$PERL_HOME/bin:$PERL_HOME/site/bin:$DART_HOME/bin:$RACKET_HOME/bin:$NIMROD_HOME/bin:$NGINX_HOME/sbin:$PATH"
 export LD_LIBRARY_PATH='$LD_LIBRARY_PATH:/usr/local/apr/lib'
-
-export TFB_SERVER_HOST=172.16.98.122'
+export TFB_SERVER_HOST='172.16.98.122'
 export TFB_CLIENT_HOST='172.16.98.98'
 export TFB_CLIENT_USER='tfb'
 export TFB_CLIENT_IDENTITY_FILE='/home/tfb/.ssh/id_rsa-tfb-1'
 export TFB_DATABASE_HOST='172.16.98.118'
-
-source ~/.rvm/scripts/'rvm'
+source ~/.rvm/scripts/rvm

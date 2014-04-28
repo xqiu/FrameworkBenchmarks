@@ -55,7 +55,10 @@ echo ""
 
 echo ""
 echo "Installing benchmark software"
-toolset/run-tests.py -s "$BENCHMARK_SERVER_IP" -c "$BENCHMARK_CLIENT_IP" -i "$BENCHMARK_KEY_PATH" --install-software --install-error-action abort --list-tests || { echo "Error installing software."; exit 1; }
+echo "BENCHMARK_SERVER_IP: $BENCHMARK_SERVER_IP"
+echo "BENCHMARK_CLIENT_IP: $BENCHMARK_CLIENT_IP"
+echo "BENCHMARK_KEY_PATH: $BENCHMARK_KEY_PATH"
+toolset/run-tests.py -s "$BENCHMARK_SERVER_IP" -c "$BENCHMARK_CLIENT_IP" -u ubuntu -i "$BENCHMARK_KEY_PATH" --install-software --install-error-action abort --list-tests || { echo "Error installing software."; exit 1; }
 
 echo ""
 echo "End of step 1"
