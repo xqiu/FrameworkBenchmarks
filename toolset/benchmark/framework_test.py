@@ -530,6 +530,7 @@ class FrameworkTest:
         if self.json_url_passed:
           remote_script = self.__generate_concurrency_script(self.json_url, self.port, self.accept_json)
           self.__run_benchmark(remote_script, output_file, err)
+        out.write(self.JSON) 
         results = self.__parse_test(self.JSON)
         self.benchmarker.report_results(framework=self, test=self.JSON, results=results['results'])
         out.write( "Complete\n" )
@@ -640,7 +641,8 @@ class FrameworkTest:
             # Simply opening the file in write mode should create the empty file.
             pass
         if self.plaintext_url_passed:
-          remote_script = self.__generate_concurrency_script(self.plaintext_url, self.port, self.accept_plaintext, wrk_command="wrk-pipeline", intervals=[256,1024,4096,16384], pipeline="--pipeline 16")
+          #remote_script = self.__generate_concurrency_script(self.plaintext_url, self.port, self.accept_plaintext, wrk_command="wrk-pipeline", intervals=[256,1024,4096,16384], pipeline="--pipeline 16")
+          remote_script = self.__generate_concurrency_script(self.plaintext_url, self.port, self.accept_plaintext, wrk_command="wrk-pipeline", intervals=[256,1024,4096,16384])
           self.__run_benchmark(remote_script, output_file, err)
         results = self.__parse_test(self.PLAINTEXT)
         self.benchmarker.report_results(framework=self, test=self.PLAINTEXT, results=results['results'])
@@ -699,6 +701,8 @@ class FrameworkTest:
     try:
       results = dict()
       results['results'] = []
+      
+      print("checking " + self.benchmarker.output_file(self.name, test_type))
       
       if os.path.exists(self.benchmarker.get_output_file(self.name, test_type)):
         with open(self.benchmarker.output_file(self.name, test_type)) as raw_data:
@@ -781,6 +785,7 @@ class FrameworkTest:
 
       return results
     except IOError:
+      print("IOError")
       return None
   ############################################################
   # End benchmark
@@ -797,6 +802,8 @@ class FrameworkTest:
   # outputed to the output_file.
   ############################################################
   def __run_benchmark(self, script, output_file, err):
+    print("__run_benchmark: " + output_file)
+    print("self.benchmarker.client_ssh_string: " + self.benchmarker.client_ssh_string)
     with open(output_file, 'w') as raw_file:
 	  
       p = subprocess.Popen(self.benchmarker.client_ssh_string.split(" "), stdin=subprocess.PIPE, stdout=raw_file, stderr=err)
